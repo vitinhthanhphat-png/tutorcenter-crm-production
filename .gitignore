@@ -21,3 +21,5 @@ yarn-error.log
 _debug_seed.php
 _routes.txt
 _seed_result.txt
+
+storage/installed
