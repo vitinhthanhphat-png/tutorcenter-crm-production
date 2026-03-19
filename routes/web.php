@@ -15,6 +15,8 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\StudentPortalController;
+use App\Http\Controllers\GradeController;
+use App\Http\Controllers\PdfExportController;
 use App\Http\Controllers\TransferController;
 use Illuminate\Support\Facades\Route;
 
@@ -34,7 +36,6 @@ Route::middleware(['auth', 'verified', 'tenant'])->group(function () {
 
     // Classes — view: all | create/edit/delete: manager only
     Route::get('classes', [ClassesController::class, 'index'])->name('classes.index');
-    Route::get('classes/{class}', [ClassesController::class, 'show'])->name('classes.show');
 
     Route::middleware('role:center_manager,super_admin')->group(function () {
         Route::get('classes/create', [ClassesController::class, 'create'])->name('classes.create');
@@ -44,6 +45,8 @@ Route::middleware(['auth', 'verified', 'tenant'])->group(function () {
         Route::patch('classes/{class}', [ClassesController::class, 'update']);
         Route::delete('classes/{class}', [ClassesController::class, 'destroy'])->name('classes.destroy');
     });
+
+    Route::get('classes/{class}', [ClassesController::class, 'show'])->name('classes.show');
 
     // Attendance — teacher + manager
     Route::middleware('role:teacher,center_manager,super_admin')->group(function () {
@@ -119,6 +122,28 @@ Route::middleware(['auth', 'verified', 'tenant'])->group(function () {
         Route::get('export/cashbook',        [ExportController::class, 'cashbook']  )->name('export.cashbook');
         Route::get('export/payroll',         [ExportController::class, 'payroll']   )->name('export.payroll');
         Route::get('export/attendance',      [ExportController::class, 'attendance'])->name('export.attendance');
+    });
+
+    // PDF Export — manager + accountant
+    Route::middleware('role:center_manager,accountant,super_admin')->group(function () {
+        Route::get('pdf/students/{student}', [PdfExportController::class, 'studentPdf'] )->name('pdf.student');
+        Route::get('pdf/invoices/{invoice}', [PdfExportController::class, 'invoicePdf'] )->name('pdf.invoice');
+        Route::get('pdf/payroll',            [PdfExportController::class, 'payrollPdf'] )->name('pdf.payroll');
+        Route::get('pdf/classes/{classroom}',[PdfExportController::class, 'attendancePdf'])->name('pdf.attendance');
+    });
+
+    // Grade Report — teacher + manager
+    Route::middleware('role:teacher,center_manager,super_admin')->group(function () {
+        Route::get('grades', [GradeController::class, 'list'])->name('grades.list');
+        Route::get('classes/{classroom}/grades', [GradeController::class, 'index'])->name('grades.class');
+        Route::get('students/{student}/grades',  [GradeController::class, 'show'] )->name('grades.student');
+    });
+
+    // Reservation — manager + accountant
+    Route::middleware('role:center_manager,accountant,super_admin')->group(function () {
+        Route::get('enrollments/{enrollment}/reserve',  [\App\Http\Controllers\ReservationController::class, 'create'])->name('reservations.create');
+        Route::post('enrollments/{enrollment}/reserve', [\App\Http\Controllers\ReservationController::class, 'store'] )->name('reservations.store');
+        Route::patch('enrollments/{enrollment}/reactivate', [\App\Http\Controllers\ReservationController::class, 'reactivate'])->name('reservations.reactivate');
     });
 });
 

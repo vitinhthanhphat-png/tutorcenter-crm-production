@@ -18,11 +18,14 @@ class Enrollment extends Model
         'tenant_id', 'student_id', 'class_id',
         'final_price', 'paid_amount',
         'discount_note', 'status', 'enrolled_by', 'notes',
+        'reserved_at', 'reservation_ends_at', 'reservation_note',
     ];
 
     protected $casts = [
-        'final_price' => 'decimal:0',
-        'paid_amount'  => 'decimal:0',
+        'final_price'         => 'decimal:0',
+        'paid_amount'         => 'decimal:0',
+        'reserved_at'         => 'date',
+        'reservation_ends_at' => 'date',
     ];
 
     // Outstanding debt

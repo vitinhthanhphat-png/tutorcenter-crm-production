@@ -66,25 +66,25 @@
                 @endforelse
             </div>
 
-            {{-- Unpaid Invoices --}}
+            {{-- Recent Invoices --}}
             <div class="bg-white border border-gray-100">
                 <div class="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
                     <div class="flex items-center gap-2">
                         <span>💳</span>
-                        <h3 class="text-sm font-semibold text-gray-700">Học phí cần thanh toán</h3>
+                        <h3 class="text-sm font-semibold text-gray-700">Thanh toán gần đây</h3>
                     </div>
                     <a href="{{ route('portal.invoices') }}" class="text-xs text-red-500 hover:underline">Xem tất cả →</a>
                 </div>
-                @forelse($unpaidInvoices as $inv)
+                @forelse($recentInvoices as $inv)
                 <div class="flex items-center justify-between px-5 py-2 border-b border-gray-50 last:border-0">
                     <div>
-                        <p class="text-xs font-medium text-gray-700">{{ $inv->description ?? 'Học phí' }}</p>
-                        <p class="text-xs text-gray-400">Hạn: {{ $inv->due_date ? \Carbon\Carbon::parse($inv->due_date)->format('d/m/Y') : '—' }}</p>
+                        <p class="text-xs font-medium text-gray-700">{{ $inv->notes ?? 'Học phí' }}</p>
+                        <p class="text-xs text-gray-400">{{ \Carbon\Carbon::parse($inv->transaction_date)->format('d/m/Y') }}</p>
                     </div>
-                    <span class="text-sm font-semibold text-red-600">{{ number_format($inv->amount) }}đ</span>
+                    <span class="text-sm font-semibold text-green-600">{{ number_format($inv->amount) }}đ</span>
                 </div>
                 @empty
-                <p class="px-5 py-6 text-sm text-gray-400 text-center">✅ Không có học phí chưa thanh toán.</p>
+                <p class="px-5 py-6 text-sm text-gray-400 text-center">Chưa có thanh toán nào.</p>
                 @endforelse
             </div>
         </div>

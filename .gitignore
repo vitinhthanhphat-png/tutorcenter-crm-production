@@ -17,3 +17,7 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+/.agent
+_debug_seed.php
+_routes.txt
+_seed_result.txt

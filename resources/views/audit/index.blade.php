@@ -43,13 +43,13 @@
                         </td>
                         <td class="px-4 py-2.5">
                             <span class="text-xs px-2 py-0.5 font-mono
-                                @match($log->event)
+                                @switch($log->event)
                                     @case('deleted') bg-red-50 text-red-600 @break
                                     @case('created') bg-green-50 text-green-700 @break
                                     @case('updated') bg-blue-50 text-blue-600 @break
                                     @case('transfer') bg-yellow-50 text-yellow-700 @break
                                     @default bg-gray-50 text-gray-500
-                                @endmatch
+                                @endswitch
                             ">{{ $log->event }}</span>
                         </td>
                         <td class="px-4 py-2.5 text-gray-500 text-xs">

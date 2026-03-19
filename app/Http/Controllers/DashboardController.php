@@ -45,13 +45,13 @@ class DashboardController extends Controller
         $recentLeads = Student::leads()->latest()->limit(5)->get();
 
         // ─── Attendance Rate (this month) ──────────────────────────────
-        $attendanceStats = Attendance::join('class_sessions', 'attendances.class_session_id', '=', 'class_sessions.id')
+        $attendanceStats = Attendance::join('class_sessions', 'attendances.session_id', '=', 'class_sessions.id')
             ->whereMonth('class_sessions.date', $month)
             ->whereYear('class_sessions.date', $year)
             ->selectRaw("
                 COUNT(*) as total,
                 SUM(CASE WHEN attendances.status = 'present' THEN 1 ELSE 0 END) as present,
-                SUM(CASE WHEN attendances.status = 'absent' THEN 1 ELSE 0 END) as absent
+                SUM(CASE WHEN attendances.status IN ('absent_no_leave','absent_with_leave') THEN 1 ELSE 0 END) as absent
             ")
             ->first();
 
@@ -60,7 +60,7 @@ class DashboardController extends Controller
             : 0;
 
         // ─── Dropout / Stopped Students ──────────────────────────────
-        $droppedThisMonth = Student::where('status', 'inactive')
+        $droppedThisMonth = Student::where('status', 'dropped')
             ->whereMonth('updated_at', $month)
             ->whereYear('updated_at', $year)
             ->count();
@@ -87,13 +87,8 @@ class DashboardController extends Controller
             ->pluck('total', 'month')
             ->toArray();
 
-        // ─── Unpaid Invoices (overdue) ────────────────────────────────
-        $overdueInvoices = Invoice::where('status', 'pending')
-            ->where('due_date', '<', $today)
-            ->with(['student'])
-            ->orderBy('due_date')
-            ->limit(5)
-            ->get();
+        // ─── Unpaid (enrollment has outstanding balance) ─────────────
+        $overdueInvoices = collect(); // Invoices table has no status/due_date columns
 
         return view('dashboard', compact(
             'stats', 'todayClasses', 'recentLeads',

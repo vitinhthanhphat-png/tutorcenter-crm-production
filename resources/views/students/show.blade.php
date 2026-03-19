@@ -5,6 +5,15 @@
         · {{ $student->phone ?? 'Chưa có SĐT' }}
     </x-slot>
     <x-slot name="actions">
+        <a href="{{ route('pdf.student', $student) }}" target="_blank"
+           class="inline-flex items-center gap-1.5 px-4 py-2 border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Xuất PDF
+        </a>
+        <a href="{{ route('grades.student', $student) }}"
+           class="inline-flex items-center gap-1.5 px-4 py-2 border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+            📊 Bảng điểm
+        </a>
         <a href="{{ route('students.edit', $student) }}"
            class="inline-flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-colors">
             Sửa thông tin
@@ -77,21 +86,52 @@
                                 <th class="px-5 py-2.5 text-left text-xs font-medium text-gray-400">Đã đóng</th>
                                 <th class="px-5 py-2.5 text-left text-xs font-medium text-gray-400">Còn nợ</th>
                                 <th class="px-5 py-2.5 text-left text-xs font-medium text-gray-400">Trạng thái</th>
+                                <th class="px-5 py-2.5 text-left text-xs font-medium text-gray-400">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-50">
                             @foreach($student->enrollments as $enrollment)
                             @php $debt = $enrollment->final_price - $enrollment->paid_amount; @endphp
                             <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-5 py-3 text-sm font-medium text-gray-900">{{ $enrollment->classroom?->name ?? '—' }}</td>
+                                <td class="px-5 py-3 text-sm font-medium text-gray-900">
+                                    <a href="{{ route('grades.class', $enrollment->classroom) }}" class="hover:text-red-600 transition-colors">{{ $enrollment->classroom?->name ?? '—' }}</a>
+                                    @if($enrollment->status === 'reserved')
+                                    <div class="text-xs text-blue-500 mt-0.5">
+                                        Bảo lưu đến {{ $enrollment->reservation_ends_at?->format('d/m/Y') }}
+                                    </div>
+                                    @endif
+                                </td>
                                 <td class="px-5 py-3 text-sm text-gray-600">{{ number_format($enrollment->final_price) }}đ</td>
                                 <td class="px-5 py-3 text-sm text-green-600 font-medium">{{ number_format($enrollment->paid_amount) }}đ</td>
                                 <td class="px-5 py-3 text-sm {{ $debt > 0 ? 'text-red-600 font-semibold' : 'text-gray-400' }}">
                                     {{ $debt > 0 ? number_format($debt).'đ' : '✓ Đã thanh toán' }}
                                 </td>
                                 <td class="px-5 py-3">
-                                    @php $eMap = ['active'=>['Đang học','bg-green-50 text-green-700'],'completed'=>['Hoàn thành','bg-gray-100 text-gray-500'],'dropped'=>['Nghỉ','bg-red-50 text-red-700']]; $e = $eMap[$enrollment->status] ?? ['?','bg-gray-100']; @endphp
+                                    @php
+                                        $eMap = [
+                                            'active'    => ['Đang học',   'bg-green-50 text-green-700'],
+                                            'completed' => ['Hoàn thành', 'bg-gray-100 text-gray-500'],
+                                            'dropped'   => ['Nghỉ',       'bg-red-50 text-red-700'],
+                                            'reserved'  => ['Bảo lưu',    'bg-blue-50 text-blue-700'],
+                                            'cancelled' => ['Hủy',        'bg-gray-100 text-gray-400'],
+                                        ];
+                                        $e = $eMap[$enrollment->status] ?? ['?','bg-gray-100'];
+                                    @endphp
                                     <span class="text-xs px-2 py-0.5 font-medium {{ $e[1] }}">{{ $e[0] }}</span>
+                                </td>
+                                <td class="px-5 py-3">
+                                    <div class="flex items-center gap-2">
+                                        @if($enrollment->status === 'active')
+                                        <a href="{{ route('reservations.create', $enrollment) }}"
+                                           class="text-xs text-amber-600 hover:text-amber-800 hover:underline">Bảo lưu</a>
+                                        @elseif($enrollment->status === 'reserved')
+                                        <form method="POST" action="{{ route('reservations.reactivate', $enrollment) }}" class="inline">
+                                            @csrf @method('PATCH')
+                                            <button type="submit" class="text-xs text-green-600 hover:text-green-800 hover:underline">Kích hoạt lại</button>
+                                        </form>
+                                        @endif
+                                        <a href="{{ route('grades.class', $enrollment->classroom) }}" class="text-xs text-gray-400 hover:text-gray-600">Bảng điểm</a>
+                                    </div>
                                 </td>
                             </tr>
                             @endforeach

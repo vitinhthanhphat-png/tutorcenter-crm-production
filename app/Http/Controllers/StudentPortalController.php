@@ -54,14 +54,15 @@ class StudentPortalController extends Controller
             ->limit(10)
             ->get();
 
-        // Unpaid invoices
-        $unpaidInvoices = Invoice::where('student_id', $student->id)
-            ->where('status', 'pending')
-            ->orderBy('due_date')
+        // Recent invoices (via enrollments)
+        $enrollmentIds = $student->enrollments()->pluck('id');
+        $recentInvoices = Invoice::whereIn('enrollment_id', $enrollmentIds)
+            ->orderByDesc('transaction_date')
+            ->limit(5)
             ->get();
 
         return view('portal.index', compact(
-            'student', 'enrollments', 'upcoming', 'recentAttendance', 'unpaidInvoices'
+            'student', 'enrollments', 'upcoming', 'recentAttendance', 'recentInvoices'
         ));
     }
 
@@ -106,12 +107,14 @@ class StudentPortalController extends Controller
             return view('portal.no-student');
         }
 
-        $invoices = Invoice::where('student_id', $student->id)
+        $enrollmentIds = $student->enrollments()->pluck('id');
+
+        $invoices = Invoice::whereIn('enrollment_id', $enrollmentIds)
             ->orderByDesc('transaction_date')
             ->paginate(20);
 
-        $totalPaid    = Invoice::where('student_id', $student->id)->where('status', 'paid')->sum('amount');
-        $totalPending = Invoice::where('student_id', $student->id)->where('status', 'pending')->sum('amount');
+        $totalPaid = Invoice::whereIn('enrollment_id', $enrollmentIds)->sum('amount');
+        $totalPending = 0; // Invoices table has no status column
 
         return view('portal.invoices', compact('student', 'invoices', 'totalPaid', 'totalPending'));
     }

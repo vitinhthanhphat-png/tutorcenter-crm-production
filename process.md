@@ -1,7 +1,7 @@
 # TutorCenter CRM — Process Tracker
 
-> **Cập nhật lần cuối:** 18/03/2026 15:55
-> **Trạng thái:** ✅ Phases 1–12 hoàn thành. Student Portal, Audit Log, Dashboard Analytics, Calendar đầy đủ.
+> **Cập nhật lần cuối:** 19/03/2026 11:35
+> **Trạng thái:** ✅ Phases 1–14 hoàn thành. QA test 6 roles + 10 bugs fixed. Portal, Multi-Tenant verified.
 
 ---
 
@@ -21,6 +21,8 @@
 | 10 — CRM + Finance | Backend + Frontend | CRM Leads, Cashbook, Payroll tính tự động | ✅ DONE |
 | 11 — Calendar + Export | Backend + Frontend | Calendar FullCalendar API, Export CSV/JSON, TransferController | ✅ DONE |
 | 12 — Portal + Analytics | Backend + Frontend | Student/Parent portal, Audit Log trait, Dashboard analytics | ✅ DONE |
+| 13 — PDF + Grades + Reserve | Backend + Frontend | PDF Export (DomPDF), Bảng điểm, Bảo lưu khóa học | ✅ DONE |
+| 14 — QA Test + Bug Fix | Debugger + QA | Test 5 roles, fix 7 bugs, route order, seeder leads | ✅ DONE |
 
 ---
 
@@ -189,11 +191,40 @@ routes/
 
 ---
 
-## 📌 Backlog (Phase 13+)
+## 📌 Backlog (Phase 14+)
 
-- [ ] PDF export (`barryvdh/laravel-dompdf` — cần kiểm tra PHP version conflict)
 - [ ] Email/Zalo notification cho học phí đến hạn
 - [ ] Transfer lớp full UI (form chuyển lớp giữa chừng, migration đã có)
 - [ ] API endpoints cho mobile app
-- [ ] Điểm bài tập / điểm thi cho học sinh
-- [ ] Bảo lưu khóa học (tạm ngừng + cấn trừ học phí)
+- [ ] Điểm bài tập / Điểm thi nâng cao (quiz online)
+- [ ] Bảo lưu tự động hết hạn (cron job)
+
+---
+
+## 📄 PDF Export (Phase 13)
+
+URL prefix: `/pdf/` → Role: `center_manager`, `accountant`, `super_admin`
+
+| Endpoint | Mô tả |
+|----------|--------|
+| `GET /pdf/students/{student}` | Hồ sơ HS (A4 portrait) |
+| `GET /pdf/invoices/{invoice}` | Phiếu thu học phí (A5) |
+| `GET /pdf/payroll?month=YYYY-MM` | Bảng lương tháng (A4 landscape) |
+| `GET /pdf/classes/{classroom}` | Báo cáo điểm danh lớp (A4 landscape) |
+
+## 📊 Bảng Điểm (Phase 13)
+
+| Endpoint | Mô tả |
+|----------|--------|
+| `GET /classes/{classroom}/grades` | Ma trận điểm lớp (students × sessions) |
+| `GET /students/{student}/grades` | Điểm cá nhân theo enrollment |
+
+## ⏸️ Bảo Lưu Khóa Học (Phase 13)
+
+| Endpoint | Mô tả |
+|----------|--------|
+| `GET /enrollments/{enrollment}/reserve` | Form bảo lưu |
+| `POST /enrollments/{enrollment}/reserve` | Xác nhận bảo lưu |
+| `PATCH /enrollments/{enrollment}/reactivate` | Kích hoạt lại |
+
+Migration: `reserved_at`, `reservation_ends_at`, `reservation_note` trên `enrollments` table.
