@@ -18,7 +18,26 @@ use App\Http\Controllers\StudentPortalController;
 use App\Http\Controllers\GradeController;
 use App\Http\Controllers\PdfExportController;
 use App\Http\Controllers\TransferController;
+use App\Http\Controllers\InstallController;
 use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Installer Routes (no auth required)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('install')->name('install.')->middleware('web')->group(function () {
+    Route::get('/',         [InstallController::class, 'index'])->name('index');
+    Route::get('/database', [InstallController::class, 'database'])->name('database');
+    Route::post('/database',[InstallController::class, 'saveDatabase'])->name('save-database');
+    Route::get('/admin',    [InstallController::class, 'admin'])->name('admin');
+    Route::post('/admin',   [InstallController::class, 'saveAdmin'])->name('save-admin');
+    Route::get('/settings', [InstallController::class, 'settings'])->name('settings');
+    Route::post('/settings',[InstallController::class, 'saveSettings'])->name('save-settings');
+    Route::get('/finalize', [InstallController::class, 'finalize'])->name('finalize');
+    Route::post('/execute', [InstallController::class, 'execute'])->name('execute');
+    Route::get('/complete', [InstallController::class, 'complete'])->name('complete');
+});
 
 Route::view('/', 'welcome');
 
